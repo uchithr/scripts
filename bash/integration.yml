@@ -25,6 +25,54 @@ scp $BACKUP_DIR/$FILENAME $DESTINATION
 rm $BACKUP_DIR/$FILENAME
 
 
+
+
+#### BACKUP SCRIPT 2 _______________________________________________________________________________________
+
+#!/bin/bash
+ 
+# Set up variables for the source directory, backup directory, and file name
+src_dir="/home/myuser"
+backup_dir="/mnt/backups"
+backup_file="mybackup_$(date +%Y%m%d_%H%M%S).tar.gz"
+ 
+# Create the backup archive using tar
+tar -czvf "$backup_dir/$backup_file" "$src_dir"
+ 
+# Verify the integrity of the backup archive
+tar -tzvf "$backup_dir/$backup_file"
+ 
+# Copy the backup archive to a remote server using scp
+scp "$backup_dir/$backup_file" user@remotehost:/backup/location/
+
+
+
+
+
+#### DATA MIGRATION SCRIPT _______________________________________________________________________________________
+
+#!/bin/bash
+ 
+# Set up variables for source and destination databases
+source_db="old_database"
+destination_db="new_database"
+ 
+# Export data from the source database to a CSV file
+mysql -u username -p password -e "SELECT * FROM table_name" $source_db | sed 's/\t/","/g;s/^/"/;s/$/"/;s/\n//g' > data.csv
+ 
+# Import the CSV file into the destination database
+mysqlimport --fields-terminated-by=',' --lines-terminated-by='\n' -u username -p password $destination_db data.csv
+
+# Remove the exported CSV file
+rm data.csv
+
+
+
+
+
+
+
+
 ##### DEPLOYMENT SCRIPT: _______________________________________________________________________________________
 
 
@@ -52,6 +100,11 @@ done
 
 
 
+
+
+
+
+
 ##### MONITORING SCRIPT:_______________________________________________________________________________________
 
 #!/bin/bash
@@ -74,6 +127,11 @@ do
   # Wait 5 minutes and check again
   sleep 300
 done
+
+
+
+
+
 
 
  #### CONFIGURATION SCRIPT:_______________________________________________________________________________________
@@ -103,6 +161,11 @@ y
 y
 EOF
 
+
+
+
+
+
  
  ##### MAINTENANCE SCRIPT:_______________________________________________________________________________________
   
@@ -116,6 +179,11 @@ rm -rf /tmp/*
 
 # Optimize system resources
 sync && echo 3 > /proc/sys/vm/drop_caches
+
+
+
+
+
 
 
  ##### SECURITY SCRIPT:_______________________________________________________________________________________
@@ -137,6 +205,27 @@ iptables -A INPUT -j DROP
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 sed -i 's/^#ignoreip = 127.0.0.1/ignoreip = 127.0.0.1 my-trusted-ip/g' /etc/fail2ban/jail.local
 systemctl start fail2ban.service
+
+
+##### SECURITY SCRIPT: 2 _______________________________________________________________________________________
+
+import os
+import subprocess
+ 
+# Set up variables for IP address and port range to scan
+ip_address = "192.168.0.1"
+port_range = "1-65535"
+ 
+# Run nmap to scan for open ports and vulnerabilities
+output = subprocess.check_output(["nmap", "-p", port_range, "--script", "vuln", ip_address])
+ 
+# Write output to a text file
+with open("security_scan.txt", "w") as file:
+    file.write(str(output))
+ 
+# Send an alert email if vulnerabilities are found
+if "VULNERABLE" in str(output):
+    os.system("echo 'Security Alert: Vulnerabilities found on server' | mail -s 'Security Alert' admin@example.com")
 
 
 
